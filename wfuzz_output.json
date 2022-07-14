@@ -1,0 +1,26 @@
+[
+  {
+    "chars": 47,
+    "code": 302,
+    "payload": "features",
+    "lines": 2,
+    "location": "//www.kali.org/features/",
+    "method": "GET",
+    "post_data": [],
+    "server": "cloudflare",
+    "url": "https://www.kali.org/features",
+    "words": 2
+  },
+  {
+    "chars": 43,
+    "code": 302,
+    "payload": "blog",
+    "lines": 2,
+    "location": "//www.kali.org/blog/",
+    "method": "GET",
+    "post_data": [],
+    "server": "cloudflare",
+    "url": "https://www.kali.org/blog",
+    "words": 2
+  }
+]
