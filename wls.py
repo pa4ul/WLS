@@ -2,11 +2,13 @@ import click
 import requests
 import re
 from bs4 import BeautifulSoup
+import json
 
 
 def get_html_of(url):
     resp = requests.get(url)
 
+    # not working properly
     if resp.status_code != 200:
         print(
             f'HTTP status code of {resp.status_code} returned, but 200 was expected. Exiting...')
@@ -41,15 +43,35 @@ def get_top_words_from(all_words, min_length):
     return sorted(occurrences.items(), key=lambda item: item[1], reverse=True)
 
 
-@click.command()
-@click.option('--url', '-u', prompt='Web URL', help='URL of webpage to extract from.')
-@click.option('--length', '-l', default=0, help='Minimum word length (default: 0, no limit).')
-def main(url, length):
+def spyder_specific_url(url, length, source):
     the_words = get_all_words_from(url)
     top_words = get_top_words_from(the_words, length)
 
     for i in range(10):
         print(top_words[i][0])
+
+
+def read_wfuzz_file(src):
+    url_list = []
+
+    with open(src) as file:
+        json_data = json.load(file)
+
+    for i in json_data:
+        if i['url'] not in url_list:
+            url_list.append(i['url'])
+
+    return url_list
+
+
+@click.command()
+@click.option('--length', '-l', default=0, help='Minimum word length (default: 0, no limit).')
+@click.option('--source', '-src', prompt='Specify the JSON file from wfuzz', help='Specify the JSON file from wfuzz')
+def main(length, source):
+    url_list = read_wfuzz_file(source)
+    for url in url_list:
+        print("==============================")
+        spyder_specific_url(url, length, source)
 
 
 if __name__ == '__main__':
