@@ -43,11 +43,11 @@ def get_top_words_from(all_words, min_length):
     return sorted(occurrences.items(), key=lambda item: item[1], reverse=True)
 
 
-def spyder_specific_url(url, length, source):
+def spyder_specific_url(url, length, how_much_words):
     the_words = get_all_words_from(url)
     top_words = get_top_words_from(the_words, length)
 
-    for i in range(10):
+    for i in range(how_much_words):
         print(top_words[i][0])
 
 
@@ -67,11 +67,12 @@ def read_wfuzz_file(src):
 @click.command()
 @click.option('--length', '-l', default=0, help='Minimum word length (default: 0, no limit).')
 @click.option('--source', '-src', prompt='Specify the JSON file from wfuzz', help='Specify the JSON file from wfuzz')
-def main(length, source):
+@click.option('--size', '-s', prompt='How many words should be generated?', help='The most popular words will be written into the wordlist. Here you have to define how many words you want to have in the wordlist.')
+def main(length, source, size):
     url_list = read_wfuzz_file(source)
     for url in url_list:
         print("==============================")
-        spyder_specific_url(url, length, source)
+        spyder_specific_url(url, length, int(size))
 
 
 if __name__ == '__main__':
