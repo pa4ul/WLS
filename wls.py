@@ -5,6 +5,9 @@ from bs4 import BeautifulSoup
 import json
 
 
+words_from_different_urls = {}
+
+
 def get_html_of(url):
     resp = requests.get(url)
 
@@ -49,6 +52,17 @@ def spyder_specific_url(url, length, how_much_words):
 
     for i in range(how_much_words):
         print(top_words[i][0])
+        top_words_general(top_words[i][0])
+
+
+def top_words_general(word):
+    global words_from_different_urls
+
+    if word not in words_from_different_urls:
+        words_from_different_urls[word] = 1
+    else:
+        current_count = words_from_different_urls.get(word)
+        words_from_different_urls[word] = current_count + 1
 
 
 def read_wfuzz_file(src):
@@ -69,11 +83,14 @@ def read_wfuzz_file(src):
 @click.option('--source', '-src', prompt='Specify the JSON file from wfuzz', help='Specify the JSON file from wfuzz')
 @click.option('--size', '-s', prompt='How many words should be generated?', help='The most popular words will be written into the wordlist. Here you have to define how many words you want to have in the wordlist.')
 def main(length, source, size):
+
     url_list = read_wfuzz_file(source)
     for url in url_list:
         print("==============================")
         spyder_specific_url(url, length, int(size))
-
+    print("===========TOP WORDS==============")
+    for i in words_from_different_urls:
+        print(i) ##CONTINUE HERE (WORDS-FROM-DIFFERENT-URLS) check the number how often a word occurs
 
 if __name__ == '__main__':
     main()
