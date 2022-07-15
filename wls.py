@@ -46,23 +46,27 @@ def get_top_words_from(all_words, min_length):
     return sorted(occurrences.items(), key=lambda item: item[1], reverse=True)
 
 
+def sort_top_words_general(words):
+    return sorted(words.items(), key=lambda item: item[1], reverse=True)
+
+
 def spyder_specific_url(url, length, how_much_words):
     the_words = get_all_words_from(url)
     top_words = get_top_words_from(the_words, length)
 
     for i in range(how_much_words):
-        print(top_words[i][0])
-        top_words_general(top_words[i][0])
+        #print(f'{top_words[i][0]}') prints out the specic word
+        top_words_general(top_words[i][0],top_words[i][1])
 
 
-def top_words_general(word):
+def top_words_general(word,amount):
     global words_from_different_urls
 
     if word not in words_from_different_urls:
-        words_from_different_urls[word] = 1
+        words_from_different_urls[word] = amount
     else:
         current_count = words_from_different_urls.get(word)
-        words_from_different_urls[word] = current_count + 1
+        words_from_different_urls[word] += amount
 
 
 def read_wfuzz_file(src):
@@ -83,14 +87,18 @@ def read_wfuzz_file(src):
 @click.option('--source', '-src', prompt='Specify the JSON file from wfuzz', help='Specify the JSON file from wfuzz')
 @click.option('--size', '-s', prompt='How many words should be generated?', help='The most popular words will be written into the wordlist. Here you have to define how many words you want to have in the wordlist.')
 def main(length, source, size):
-
+    counter = 1
     url_list = read_wfuzz_file(source)
     for url in url_list:
-        print("==============================")
         spyder_specific_url(url, length, int(size))
-    print("===========TOP WORDS==============")
-    for i in words_from_different_urls:
-        print(i) ##CONTINUE HERE (WORDS-FROM-DIFFERENT-URLS) check the number how often a word occurs
+
+    print("Sorted")
+    sorted_words = sort_top_words_general(words_from_different_urls)
+    print("{:<8} {:<10} {:<10}".format('Pos', 'Word', 'Quantity'))
+    for word in sorted_words:
+        print("{:<8} {:<10} {:<10}".format(counter, word[0], word[1]))
+        counter+=1
+
 
 if __name__ == '__main__':
     main()
