@@ -3,6 +3,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import json
+from tqdm import tqdm
 
 
 words_from_different_urls = {}
@@ -55,11 +56,11 @@ def spyder_specific_url(url, length, how_much_words):
     top_words = get_top_words_from(the_words, length)
 
     for i in range(how_much_words):
-        #print(f'{top_words[i][0]}') prints out the specic word
-        top_words_general(top_words[i][0],top_words[i][1])
+        # print(f'{top_words[i][0]}') prints out the specic word
+        top_words_general(top_words[i][0], top_words[i][1])
 
 
-def top_words_general(word,amount):
+def top_words_general(word, amount):
     global words_from_different_urls
 
     if word not in words_from_different_urls:
@@ -81,24 +82,40 @@ def read_wfuzz_file(src):
 
     return url_list
 
+def print_result(sorted_words, size):
+    counter = 0
+    print("{:<6} {:<20} {:<10}".format('Pos', 'Word', 'Quantity'))
+    for word in sorted_words:
+        counter += 1
+        print("{:<6} {:<20} {:<10}".format(counter, word[0], word[1]))
+
+        if counter == int(size):
+            break
+
+def output_to_file(path,sorted_words):
+    output=""
+    for word in sorted_words:
+        output+=f'{word[0]}\n'
+    with open(path,'w') as file:
+        file.write(output)
+
 
 @click.command()
 @click.option('--length', '-l', default=0, help='Minimum word length (default: 0, no limit).')
 @click.option('--source', '-src', prompt='Specify the JSON file from wfuzz', help='Specify the JSON file from wfuzz')
+@click.option('--output', '-o', help='Write the output to the file.')
 @click.option('--size', '-s', prompt='How many words should be generated?', help='The most popular words will be written into the wordlist. Here you have to define how many words you want to have in the wordlist.')
-def main(length, source, size):
-    counter = 1
+def main(length, source, size, output):
+    """WLS 1.2 (https://github.com/pa4ul/WLS)"""
     url_list = read_wfuzz_file(source)
     for url in url_list:
         spyder_specific_url(url, length, int(size))
 
     print("Sorted")
     sorted_words = sort_top_words_general(words_from_different_urls)
-    print("{:<8} {:<10} {:<10}".format('Pos', 'Word', 'Quantity'))
-    for word in sorted_words:
-        print("{:<8} {:<10} {:<10}".format(counter, word[0], word[1]))
-        counter+=1
-
+    print_result(sorted_words, size)
+    if output is not None:
+        output_to_file(output,sorted_words)
 
 if __name__ == '__main__':
     main()
