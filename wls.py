@@ -109,7 +109,7 @@ def output_to_file(path, sorted_words):
 @click.option('--output', '-o', help='Write the output to the file.')
 @click.option('--size', '-s', prompt='How many words should be generated?', help='The most popular words will be written into the wordlist. Here you have to define how many words you want to have in the wordlist.')
 def main(length, source, size, output, useragent):
-    """WLS 1.2 (https://github.com/pa4ul/WLS)"""
+    """WLS 1.0 (https://github.com/pa4ul/WLS)"""
     global user_agent
 
     user_agent = useragent
