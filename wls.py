@@ -3,22 +3,21 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import json
-from tqdm import tqdm
-
 
 words_from_different_urls = {}
+user_agent = 'python-requests/2.28.1'
 
 
 def get_html_of(url):
-    resp = requests.get(url)
+    str_user_agent = str(user_agent)
+    header = {'User-agent': str_user_agent}
+    resp = requests.get(url, headers=header)
 
     # not working properly
-    if resp.status_code != 200:
-        print(
-            f'HTTP status code of {resp.status_code} returned, but 200 was expected. Exiting...')
-        exit(1)
-
-    return resp.content.decode()
+    if resp.status_code == 200:
+        return resp.content.decode()
+    else:
+        return False
 
 
 def count_occurrences_in(word_list, min_length):
@@ -51,7 +50,7 @@ def sort_top_words_general(words):
     return sorted(words.items(), key=lambda item: item[1], reverse=True)
 
 
-def spyder_specific_url(url, length, how_much_words):
+def spider_specific_url(url, length, how_much_words):
     the_words = get_all_words_from(url)
     top_words = get_top_words_from(the_words, length)
 
@@ -82,6 +81,7 @@ def read_wfuzz_file(src):
 
     return url_list
 
+
 def print_result(sorted_words, size):
     counter = 0
     print("{:<6} {:<20} {:<10}".format('Pos', 'Word', 'Quantity'))
@@ -92,30 +92,41 @@ def print_result(sorted_words, size):
         if counter == int(size):
             break
 
-def output_to_file(path,sorted_words):
-    output=""
+
+def output_to_file(path, sorted_words):
+    output = ""
     for word in sorted_words:
-        output+=f'{word[0]}\n'
-    with open(path,'w') as file:
+        output += f'{word[0]}\n'
+    with open(path, 'w') as file:
         file.write(output)
 
 
 @click.command()
 @click.option('--length', '-l', default=0, help='Minimum word length (default: 0, no limit).')
 @click.option('--source', '-src', prompt='Specify the JSON file from wfuzz', help='Specify the JSON file from wfuzz')
+@click.option('--useragent', '-ua', help='Specify the User-Agent to send. Default is "python-requests/2.28.1"')
 @click.option('--output', '-o', help='Write the output to the file.')
 @click.option('--size', '-s', prompt='How many words should be generated?', help='The most popular words will be written into the wordlist. Here you have to define how many words you want to have in the wordlist.')
-def main(length, source, size, output):
+def main(length, source, size, output, useragent):
     """WLS 1.2 (https://github.com/pa4ul/WLS)"""
+    global user_agent
+
+    user_agent = useragent
+
     url_list = read_wfuzz_file(source)
     for url in url_list:
-        spyder_specific_url(url, length, int(size))
+        try:
+            get = requests.get(url)
+            if get.status_code == 200:
+                spider_specific_url(url, length, int(size))
+        except:
+            print("NOT WORKING CORRECTLY")
 
-    print("Sorted")
     sorted_words = sort_top_words_general(words_from_different_urls)
     print_result(sorted_words, size)
     if output is not None:
-        output_to_file(output,sorted_words)
+        output_to_file(output, sorted_words)
+
 
 if __name__ == '__main__':
     main()
