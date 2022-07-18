@@ -3,6 +3,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import json
+import os.path
 
 words_from_different_urls = {}
 user_agent = 'python-requests/2.28.1'
@@ -113,14 +114,19 @@ def main(length, source, size, output, useragent):
 
     user_agent = useragent
 
-    url_list = read_wfuzz_file(source)
+    if os.path.exists(source):
+        url_list = read_wfuzz_file(source)
+    else:
+        print(f'Given path is invalid: {source} \nexiting ...')
+        exit(1)
+
     for url in url_list:
         try:
             get = requests.get(url)
             if get.status_code == 200:
                 spider_specific_url(url, length, int(size))
         except:
-            print("NOT WORKING CORRECTLY")
+            print("URL NOT REACHABLE")
 
     sorted_words = sort_top_words_general(words_from_different_urls)
     print_result(sorted_words, size)
